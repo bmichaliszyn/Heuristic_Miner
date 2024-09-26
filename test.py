@@ -1,0 +1,50 @@
+import ant_colony as ac
+
+
+nodes = ['A', 'B', 'C', 'D', 'E']
+
+default_pheromone= { # Use greedy approach to genereate t0, 
+    'A' : 1,
+    'B' : 1,
+    'C' : 1,
+    'D' : 1,
+    'E' : 1
+}
+
+default_weight = {
+    'A': 5,
+    'B': 2,
+    'C': 4,
+    'D': 2,
+    'E': 3
+}
+
+default_edges = {
+    'A': ['B', 'E'],
+    'B': ['A', 'C'],
+    'C': ['B', 'D'],
+    'D': ['C', 'E'],
+    'E': ['A', 'D']  
+}
+
+default_connectivity = {
+    'AB': 1 ,'AC': 0, 'AD': 0, 'AE': 1,
+    'BC': 1, 'BD': 0, 'BE':0,
+    'CD': 1, 'CE': 0,
+    'DE': 1
+}
+
+
+cycles =3
+cSize =5
+#cycle evap rate
+local_evaporation = 0.5
+
+#global pheromone updating rul
+global_evaporation = 0.9
+expansion_value = 1.05
+
+
+q0 = 0.2
+#t0 = supposed to equal our greedy approach
+print(ac.acomvc(default_pheromone, default_connectivity, cSize, q0, cycles, nodes, default_weight, default_edges))
