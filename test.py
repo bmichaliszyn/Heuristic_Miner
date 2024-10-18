@@ -1,6 +1,7 @@
 import ant_colony as ac
 
 
+
 nodes = ['A', 'B', 'C', 'D', 'E']
 
 default_pheromone= { # Use greedy approach to genereate t0, 
@@ -46,5 +47,7 @@ expansion_value = 1.05
 
 
 q0 = 0.2
-#t0 = supposed to equal our greedy approach
-print(ac.acomvc(default_pheromone, default_connectivity, cSize, q0, cycles, nodes, default_weight, default_edges))
+# #t0 = supposed to equal our greedy approach
+# print(ac.acomvc(default_pheromone, default_connectivity, cSize, q0, cycles, nodes, default_weight, default_edges))
+# nodes: list, weight: dict, edges: dict, connectivity: dict
+print(ac.greedy(nodes, default_weight, default_edges, default_connectivity))

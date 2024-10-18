@@ -126,7 +126,7 @@ def update_con(passed_con:dict, node:str, edges:dict):  # this function was awfu
         updated_con[sorted_string] = 0                            
     return updated_con
 
-def evaluate_connectivity(connectivity: dict):
+def evaluate_connectivity(connectivity: dict):  # we are working here 
     unconnected = 0
     for values in connectivity.values():
         unconnected += values
@@ -163,6 +163,54 @@ def common_value(node: str, pheromone: dict, connectivity: dict):
                 total_p_edges += 1
     value = pheromone[node] * total_p_edges/ default_weight[node]
     return value
+
+def greedy(nodes: list, weight: dict, edges: dict, connectivity: dict):
+    print('starting greedy')
+    g_connectivity = dc.deepcopy(connectivity)
+    greedy_set = []
+    greedy_weight = 0
+   
+    # We first must find a value for every node in order to see what gives us the most connnectivity for it's weight. 
+    # Large values are prioritized in being added to the set
+    value_dict = {}
+    
+    def evaluate_value(node: str):
+            node_edges = edges[node]
+            total_p_edges = 0
+            for e_node in node_edges:
+                edge = e_node + node
+                edge = ''.join(sorted(edge))
+                if connectivity [edge] == 1:
+                    total_p_edges +=1
+            return (total_p_edges/ weight[node])
+    
+  
+    # Iterating over every node once and adding the node + value to the value dict.
+    for node in nodes:
+        value_dict[node] = evaluate_value(node)
+    print('value_dict initialized')
+    print('connectivity is ', evaluate_connectivity(g_connectivity))
+    while evaluate_connectivity(g_connectivity) != 0:
+        # Find the node with the largest value and add it to the set. Update the total weight of the set. Then remove this node from the dictionary.
+        next_node = max(value_dict, key = value_dict.get)
+        greedy_set += next_node
+        greedy_weight += weight[next_node]
+        value_dict.pop(next_node)
+        
+        #update the connectivity
+        g_connectivity = update_con(g_connectivity, next_node, edges)
+        
+        # We have to update the value for each node that was connected to the edges in 'next_node'
+        print('connectivity is ', evaluate_connectivity(g_connectivity))
+        for node in edges[next_node]:
+            value_dict[node] = evaluate_value(node)
+                
+    return [greedy_set, greedy_weight]
+                
+            
+        
+        
+ 
             
 
 
