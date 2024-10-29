@@ -51,3 +51,18 @@ q0 = 0.2
 # print(ac.acomvc(default_pheromone, default_connectivity, cSize, q0, cycles, nodes, default_weight, default_edges))
 # nodes: list, weight: dict, edges: dict, connectivity: dict
 print(ac.greedy(nodes, default_weight, default_edges, default_connectivity))
+
+
+
+#####################################################################################################
+# The following can be used to determine which nodes will be selected in the greedy approach. After
+# determining the nodes, we update the pheremones with an increase of favorability
+t0 = (ac.greedy(nodes, default_weight, default_edges, default_connectivity))[0]
+print(t0)
+
+
+for node in range(len(t0)):
+    default_pheromone[node] = 1.2
+
+print(default_pheromone)
+######################################################################################################
