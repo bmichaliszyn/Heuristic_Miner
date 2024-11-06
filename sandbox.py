@@ -1,15 +1,19 @@
-# Example dictionary
-my_dict = {
-    'a': [1, 2, 3],
-    'b': [4, 5],
-    'c': [6, 7, 8, 9],
-    'd': []
-}
+import networkx as nx
 
-# Counting items in each list
-total = 0
-for key in my_dict:
-    total += len(my_dict.get(key))
+def generate_connected_erdos_renyi(n, p):
+    """Generates a connected Erdos-Renyi graph with n nodes and edge probability p."""
+    while True:
+        G = nx.erdos_renyi_graph(n, p)
+        if nx.is_connected(G):
+            return G
+        else:
+            print('bad graph')
 
-# Output the counts
-print(total)
+# Generate the graph
+graph = generate_connected_erdos_renyi(100, 0.03)
+
+# Find the node with the highest identifier
+max_node = max(graph.nodes)
+
+print(f"The node with the highest identifier is: {max_node}")
+

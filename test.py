@@ -59,10 +59,10 @@ print(ac.greedy(nodes, default_weight, default_edges, default_connectivity))
 # determining the nodes, we update the pheremones with an increase of favorability
 t0 = (ac.greedy(nodes, default_weight, default_edges, default_connectivity))[0]
 print(t0)
+C = (ac.greedy(nodes, default_weight, default_edges, default_connectivity))[1]
 
-
-for node in range(len(t0)):
-    default_pheromone[node] = 1.2
+for node in t0:
+    default_pheromone[node] = (len(nodes) * (len(nodes)-len(t0)) / C)
 
 print(default_pheromone)
 ######################################################################################################
