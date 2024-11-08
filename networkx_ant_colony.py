@@ -2,12 +2,10 @@ import random
 import copy as dc
 import numpy as np
 import networkx as nx
-import matplotlib.pyplot as plt
+from itertools import product
 
-s = 100 # Size of the graph
-p = 0.03 # Proabability of connectedness 
 q0 = 0.9 # rate at which we are selecting hueristic vs pheromone
-cycles = 100
+cycles = 200
 cSize = 10
 
 # It seems if the evaporation rate is too high, the pheremones drop too low and
@@ -24,7 +22,7 @@ def aco_mcv(graph : nx.classes.graph.Graph):
     best_weight = 9999
     
     for _ in range(cycles):
-        cycle_graph = global_graph.copy()
+        cycle_graph = dc.copy(global_graph)
         cycle = random.sample(graph.nodes, cSize)
         best_cycle_weight = 99999
         best_cycle_set = []
@@ -43,15 +41,19 @@ def aco_mcv(graph : nx.classes.graph.Graph):
                 else:
                     next_node = pheromone(tour_graph)     
                 
-                if next_node == None:
-                    break
+                # if next_node == None: # Removed this, but I may need to add it back, not sure
+                #     break
+                
                 # Flagging the selected node and it's neighbors    
                 tour_graph.nodes[next_node]['selected'] = True
                 for neighbor in tour_graph.neighbors(next_node):
                     tour_graph.nodes[neighbor]['selected'] = True
-                   
+                
+                # Adding the node to the tour set and weight   
                 tour_weight += graph.nodes[next_node]['weight']  
                 tour_set.append(next_node)
+                
+                # Checking if there is any nodes that are not connected by the set
                 remaining_edges = evaluate_connectivity(tour_graph)
             
             # After the tour
@@ -82,15 +84,22 @@ def aco_mcv(graph : nx.classes.graph.Graph):
         for node in best_cycle_set:
             global_graph.nodes[node]['pheromone'] = global_graph.nodes[node]['pheromone'] + 1/best_cycle_weight
     
-    return['Best set is' ,sorted(best_set), 'Best weight is:', best_weight]        
+    iv = []
+    bss = sorted(best_set)
+    for node in bss:
+        iv.append(global_graph.nodes[node]['weight'])
+    
+    return['Best set is' ,sorted(best_set), 'Weight of individual nodes', iv, 'Best weight is:', best_weight, ]        
             
             
 def generate_connected_erdos_renyi(s, p):
-    """Generates a connected Erdos-Renyi graph with n nodes and edge probability s."""
-    """ while True: looks for a return statement or break """
     while True:
         G = nx.erdos_renyi_graph(s, p) 
         if nx.is_connected(G):
+            for n in G.nodes:
+                G.nodes[n]['weight'] = random.randint(1,20)
+                G.nodes[n]['pheromone'] = 1
+                G.nodes[n]['selected'] = False
             return G
                 
 def evaluate_connectivity(graph: nx.classes.graph. Graph):
@@ -139,5 +148,45 @@ def hueristic(graph: nx.classes.Graph): ######## WORKING HERE
                 s_node = node
     return s_node
 
-   
+def greedy(graph: nx.classes.Graph):
+    g_set = []
+    weight = 0
+    
+    complete = False
+    while complete == False:
+        
+        nodes_in_graph = graph.number_of_nodes()
+        for node in graph:
+            if graph.nodes[node]['selected'] == False:
+                break
+            else:
+                nodes_in_graph -= 1  
+        if nodes_in_graph == 0:
+            complete = True
+        
+        # options = list((graph.number_of_nodes()))    
+        option_strength = []
+        
+        for node in graph:
+            if graph.nodes[node]['selected'] == False: 
+                p_nodes = 1
+                for neighbor in graph.neighbors(node):
+                        if graph.nodes[neighbor]['selected'] == False:
+                            p_nodes += 1 
+                strength = graph.nodes[node]['weight'] / p_nodes 
+                option_strength.append(strength)
+            else:
+                option_strength.append(0)
+        
+        next_node_index = option_strength.index(max(option_strength))
+        g_set.append(next_node_index)
+        weight += graph.nodes[next_node_index]['weight']
+        
+        graph.nodes[next_node_index]['selected'] = True
+        for neighbor in graph.neighbors(next_node_index):
+            graph.nodes[neighbor]['selected'] = True
+    return (g_set, weight)       
+
+
+    
     
