@@ -133,11 +133,13 @@ def evaluate_connectivity(connectivity: dict):  # we are working here
     return unconnected    
 
 def pheromone(pheromone:dict, connectivity: dict): 
+    
     options = list(pheromone.keys())
     probabilities = [None] * len(options)
     for i in range(len(options)):
         cv = common_value(options[i], pheromone, connectivity)
         probabilities[i]= cv  
+        
     denominator = sum(probabilities)    
     for p in range(len(probabilities)):
         probabilities[p] = probabilities[p]/denominator

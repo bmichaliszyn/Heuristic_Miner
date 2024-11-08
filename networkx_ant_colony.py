@@ -6,12 +6,14 @@ import matplotlib.pyplot as plt
 
 s = 100 # Size of the graph
 p = 0.03 # Proabability of connectedness 
-q0 = 0.2 #rate at which we are selecting hueristic vs pheromone
+q0 = 0.9 # rate at which we are selecting hueristic vs pheromone
 cycles = 100
-cSize = 3
-local_evaporation = 0.5
+cSize = 10
 
-global_evaporation = 0.9
+# It seems if the evaporation rate is too high, the pheremones drop too low and
+# you will get a negative value for probability
+local_evaporation = 0.9
+global_evaporation = 0.05
 expansion_value = 1.05
 
 
@@ -22,9 +24,9 @@ def aco_mcv(graph : nx.classes.graph.Graph):
     best_weight = 9999
     
     for _ in range(cycles):
-        cycle_graph = global_graph
-        cycle = random.sample(graph.nodes)
-        best_cycle_weight = 9999
+        cycle_graph = global_graph.copy()
+        cycle = random.sample(graph.nodes, cSize)
+        best_cycle_weight = 99999
         best_cycle_set = []
         
         for tour in cycle:
@@ -32,25 +34,41 @@ def aco_mcv(graph : nx.classes.graph.Graph):
             tour_set = [tour]
             tour_weight = graph.nodes[tour]['weight']
             remaining_edges = evaluate_connectivity(tour_graph)
+            
             while remaining_edges != 0:
                 q = random.uniform(0,1)
                 next_node = None
                 if q < q0: 
-                    next_node = hueristic()###
+                    next_node = hueristic(tour_graph)
                 else:
-                    next_node = pheromone() ###  
-                # Need to update connectivity (selected)    
-                tour_weight += graph.nodes[next_node]['weight']    
-                remaining_edges = evaluate_connectivity(tour_graph)
+                    next_node = pheromone(tour_graph)     
                 
-            #after the tour    
+                if next_node == None:
+                    break
+                # Flagging the selected node and it's neighbors    
+                tour_graph.nodes[next_node]['selected'] = True
+                for neighbor in tour_graph.neighbors(next_node):
+                    tour_graph.nodes[neighbor]['selected'] = True
+                   
+                tour_weight += graph.nodes[next_node]['weight']  
+                tour_set.append(next_node)
+                remaining_edges = evaluate_connectivity(tour_graph)
+            
+            # After the tour
+            
+            # Reset the flag
+            for node in cycle_graph.nodes:
+                cycle_graph.nodes[node]['selected'] = False 
+
+            #update best cycle weight and set 
             if tour_weight < best_cycle_weight:
                 best_cycle_weight = tour_weight
                 best_cycle_set = tour_set
-            
+                
+            # Apply the pheromone changes 
             for node in tour_set:
                 cycle_graph.nodes[node]['pheromone'] = (1- local_evaporation) + cycle_graph.nodes[node]['pheromone'] * local_evaporation
-        
+            
         # After a cycle
         if best_cycle_weight < best_weight:
             best_weight = best_cycle_weight
@@ -64,7 +82,7 @@ def aco_mcv(graph : nx.classes.graph.Graph):
         for node in best_cycle_set:
             global_graph.nodes[node]['pheromone'] = global_graph.nodes[node]['pheromone'] + 1/best_cycle_weight
     
-    return[sorted(best_set), best_weight]        
+    return['Best set is' ,sorted(best_set), 'Best weight is:', best_weight]        
             
             
 def generate_connected_erdos_renyi(s, p):
@@ -75,47 +93,51 @@ def generate_connected_erdos_renyi(s, p):
         if nx.is_connected(G):
             return G
                 
-def evaluate_connectivity(graph: nx.classes.graph.Graph):
+def evaluate_connectivity(graph: nx.classes.graph. Graph):
     return sum(1 for node in graph.nodes if graph.nodes[node].get('selected') == False)
+
+def common_value(node: int, graph: nx.classes.Graph): #### I want to check this out again
+    cur = graph.nodes[node]
+    edges = 1
+    for neighbor in graph.neighbors(node):
+        if graph.nodes[neighbor]['selected'] == False:
+            edges += 1    
+    value = cur['pheromone'] * edges/cur['weight']    
+    return value
+    
+
+def pheromone(graph: nx.classes.Graph): 
+    
+    options = list(range(graph.number_of_nodes())) 
+    probabilities = []
+    for node in graph:
+        if graph.nodes[node]['selected'] == False:
+            probabilities.append(common_value(node, graph)) 
+        else:
+            probabilities.append(0)
+            
+    denominator = sum(probabilities)   
+    if denominator == 0:
+        for node in graph.nodes:
+             if graph.nodes[node]['selected'] == False:
+                 print (common_value(node, graph))
+    for p in range(len(probabilities)):
+        probabilities[p] = probabilities[p]/denominator
+        
+    next_node = np.random.choice(options, size = 1, p = probabilities)[0]   
+    return next_node
+        
 
 def hueristic(graph: nx.classes.Graph): ######## WORKING HERE
     s_node = None
     s_value = 0
     for node in graph:
-        if graph.nodes[node]['seleted'] == False:
-            cur = graph.nodes[node]
-            if s_value < common_value(cur):
-                s_value = common_value(cur)
-                s_node = cur
+        
+        if graph.nodes[node]['selected'] == False:
+            if s_value < common_value(node, graph):
+                s_value = common_value(node, graph)
+                s_node = node
     return s_node
 
-def pheromone(): 
-    return None #TODO
-
-def common_value(node, graph: nx.classes.Graph): ####
-    cur = graph.nodes[node]
-    edges = 0
-    for neighbor in graph.neighbors(node):
-        if graph.nodes[neighbor]['selected'] == False:
-            edges += 1
-    value = cur['pheromone'] * edges/cur['weight']    
-    return value   
-    
-
-
-def main():
-    graph = generate_connected_erdos_renyi(s,p)            
-    
-    for n in graph.nodes:
-        graph.nodes[n]['weight'] = random.randint(1,10)
-        graph.nodes[n]['pheromone'] = 1
-        graph.nodes[n]['selected'] = False
-    
-    print(evaluate_connectivity(graph))    
-    # nx.draw(graph)
-    # plt.show()
-    
-    
    
-
-main()    
+    
