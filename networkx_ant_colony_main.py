@@ -3,6 +3,10 @@ import copy
 import matplotlib.pyplot as plt
 import blank_space as bls
 
+
+#ToDo:
+# Update the initial pheromones with the greedy solution
+
 def main():
         g = ac.generate_connected_erdos_renyi(20, 0.2)
         g1 = copy.deepcopy(g)

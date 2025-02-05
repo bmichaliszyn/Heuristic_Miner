@@ -19,27 +19,32 @@ expansion_value = 1.05
 def aco_mcv(graph : nx.classes.graph.Graph):
     global_graph = graph
     best_set = []
-    best_weight = 9999
+    best_weight = float('inf')
     
     for _ in range(cycles):
         cycle_graph = dc.copy(global_graph)
         cycle = random.sample(graph.nodes, cSize)
-        best_cycle_weight = 99999
+        best_cycle_weight = float('inf')
         best_cycle_set = []
         
         for tour in cycle:
             tour_graph = cycle_graph
             tour_set = [tour]
+            # I think this was the problem ############
+            tour_graph.nodes[tour]['selected'] = True ##########################
             tour_weight = graph.nodes[tour]['weight']
             remaining_edges = evaluate_connectivity(tour_graph)
             
             while remaining_edges != 0:
                 q = random.uniform(0,1)
                 next_node = None
+               
                 if q < q0: 
                     next_node = hueristic(tour_graph)
+                    method_debug = 'hueristic'
                 else:
                     next_node = pheromone(tour_graph)     
+                 
                 
                 # if next_node == None: # Removed this, but I may need to add it back, not sure
                 #     break
@@ -51,6 +56,7 @@ def aco_mcv(graph : nx.classes.graph.Graph):
                 
                 # Adding the node to the tour set and weight   
                 tour_weight += graph.nodes[next_node]['weight']  
+             
                 tour_set.append(next_node)
                 
                 # Checking if there is any nodes that are not connected by the set
@@ -84,13 +90,15 @@ def aco_mcv(graph : nx.classes.graph.Graph):
         for node in best_cycle_set:
             global_graph.nodes[node]['pheromone'] = global_graph.nodes[node]['pheromone'] + 1/best_cycle_weight
     
+    
+    ## Return statement
     iv = []
     bss = sorted(best_set)
     for node in bss:
         iv.append(global_graph.nodes[node]['weight'])
     
-    return['Best set is' ,sorted(best_set), 'Weight of individual nodes', iv, 'Best weight is:', best_weight, ]        
-            
+    return['Best set is' ,sorted(best_set), 'Weight of individual nodes', iv, 'Best weight is:', best_weight, ]    
+ 
             
 def generate_connected_erdos_renyi(s, p):
     while True:
@@ -137,7 +145,7 @@ def pheromone(graph: nx.classes.Graph):
     return next_node
         
 
-def hueristic(graph: nx.classes.Graph): ######## WORKING HERE
+def hueristic(graph: nx.classes.Graph):
     s_node = None
     s_value = 0
     for node in graph:
@@ -164,7 +172,6 @@ def greedy(graph: nx.classes.Graph):
         if nodes_in_graph == 0:
             complete = True
         
-        # options = list((graph.number_of_nodes()))    
         option_strength = []
         
         for node in graph:
