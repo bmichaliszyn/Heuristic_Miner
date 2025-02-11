@@ -3,21 +3,21 @@
 import networkx as nx
 import matplotlib.pyplot as plt
 import random
+import dict_to_csv as d2c
 
 # Parameters for the random graph
-num_nodes = 3
-num_edges =15
+num_nodes = 5
+num_edges = 16
 
 # Relationship types
 relationships = ['a', 'b', 'c']
 
 #Rules for the access control
 rules = [
-# ['a', 'b', 'c'],
-# ['c', 'a'],
-['b'],
-['a'],
-['c']
+['a', 'b', 'c']
+# ['c'],
+# ['b'],
+# ['a']
 ]
 
 # Create a MultiDiGraph
@@ -29,11 +29,9 @@ multi_digraph.add_nodes_from(range(num_nodes))
 # Add random edges (with multiple edges allowed)
 while num_edges > 0:
     source, target = random.sample(range(num_nodes), 2)
-    # Check if an edge already exists between the source and target that contains the same relationship
+    
     taken = [] # List to store the types of relationships that have been taken
 
-    # print('source:', source, 'target:', target)
-    
     # Grab the edge data for the current edge, includes all edges!
     cur_edge_data = multi_digraph.get_edge_data(source, target)
     try:
@@ -57,11 +55,13 @@ lla_dict = {}
 nodes = multi_digraph.nodes()
 for node in nodes:
     lla_dict[node] = {}
+    for i in range(len(nodes)):
+        lla_dict[node][i] = False
 
-
+#[b,c]
 
 def grant_access(node: int, rule: list, depth: int, original_node: int):
-        # If we reach the end of the rule, we can grant access
+        # If we reach the end of the rule, we can grant access #Make sure node != original_node
         if len(rule) == depth:
             lla_dict[original_node][node] = True
             return
@@ -79,12 +79,13 @@ def grant_access(node: int, rule: list, depth: int, original_node: int):
             edge_data = multi_digraph.get_edge_data(node, next_node)
             
             if edge_data:
-                type = [x['type'] for x in edge_data.values()]
+                types = [x['type'] for x in edge_data.values()]
             else:
-                type = []
+                types = []
+                # From the node we're looking at to the next node, we are keeping track of existing relationships bewteen the two nodes (outgoing)
             
             # If the edge type matches the rule, we can continue
-            if rule[depth] in type:
+            if rule[depth] in types:
                 grant_access(next_node, rule, depth + 1, original_node)
                 
             # If the edge type does not match the rule, we can't grant access
@@ -125,12 +126,13 @@ print('\n')
 print('this graph contains', multi_digraph.number_of_edges(), 'edges')       
 print('this graph contains', multi_digraph.number_of_nodes(), 'nodes')
 
+# d2c.dict_to_csv(lla_dict)
 # Visualize the MultiDiGraph
-# pos = nx.spring_layout(multi_digraph)
-# plt.figure(figsize=(8, 6))
-# nx.draw(multi_digraph, pos, with_labels=True, node_color='skyblue', edge_color='gray', node_size=700, arrowsize=20)
-# edge_labels = nx.get_edge_attributes(multi_digraph, 'relationship')
-# nx.draw_networkx_edge_labels(multi_digraph, pos, edge_labels=edge_labels)    
-# plt.title("Random MultiDiGraph with Multiple Edges and Relationships")
-# plt.show()
+pos = nx.spring_layout(multi_digraph)
+plt.figure(figsize=(8, 6))
+nx.draw(multi_digraph, pos, with_labels=True, node_color='skyblue', edge_color='gray', node_size=700, arrowsize=20)
+edge_labels = nx.get_edge_attributes(multi_digraph, 'relationship')
+nx.draw_networkx_edge_labels(multi_digraph, pos, edge_labels=edge_labels)    
+plt.title("Random MultiDiGraph with Multiple Edges and Relationships")
+plt.show()
 
