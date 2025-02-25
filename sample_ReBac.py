@@ -4,13 +4,19 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import random
 import dict_to_csv as d2c
+import pattern_tracker as pt
+
+
 
 # Parameters for the random graph
 num_nodes = 5
-num_edges = 16
+num_edges = 40
 
 # Relationship types
 relationships = ['a', 'b', 'c']
+
+# Creating a tracker object for metadata
+tracker = pt.Tracker(relations = relationships, max_depth = 3)
 
 #Rules for the access control
 rules = [
@@ -40,7 +46,7 @@ while num_edges > 0:
     except: 
         pass
 
-    # print('taken:', taken)
+    print('taken:', taken)
     
     potential_relationships = [x for x in relationships if x not in taken]   
     # print('potential relationships:', potential_relationships)
@@ -126,7 +132,7 @@ print('\n')
 print('this graph contains', multi_digraph.number_of_edges(), 'edges')       
 print('this graph contains', multi_digraph.number_of_nodes(), 'nodes')
 
-# d2c.dict_to_csv(lla_dict)
+d2c.dict_to_csv(lla_dict)
 # Visualize the MultiDiGraph
 pos = nx.spring_layout(multi_digraph)
 plt.figure(figsize=(8, 6))
