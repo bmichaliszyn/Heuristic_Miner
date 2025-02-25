@@ -9,14 +9,14 @@ import pattern_tracker as pt
 
 
 # Parameters for the random graph
-num_nodes = 5
-num_edges = 40
+num_nodes =5
+num_edges = 20
 
 # Relationship types
 relationships = ['a', 'b', 'c']
 
 # Creating a tracker object for metadata
-tracker = pt.Tracker(relations = relationships, max_depth = 3)
+# tracker = pt.Tracker(relations = relationships, max_depth = 3)
 
 #Rules for the access control
 rules = [
@@ -40,16 +40,17 @@ while num_edges > 0:
 
     # Grab the edge data for the current edge, includes all edges!
     cur_edge_data = multi_digraph.get_edge_data(source, target)
+   
     try:
         for i in cur_edge_data:
-            taken.append(cur_edge_data[i]['type'])
+            type_string = (cur_edge_data[i]['type'])
+            for c in type_string:
+                taken.append(c)
     except: 
         pass
 
-    print('taken:', taken)
     
     potential_relationships = [x for x in relationships if x not in taken]   
-    # print('potential relationships:', potential_relationships)
 
     if len(potential_relationships) > 0:
         relationship = random.choice(potential_relationships)  # Choose a random relationship type  
@@ -64,7 +65,6 @@ for node in nodes:
     for i in range(len(nodes)):
         lla_dict[node][i] = False
 
-#[b,c]
 
 def grant_access(node: int, rule: list, depth: int, original_node: int):
         # If we reach the end of the rule, we can grant access #Make sure node != original_node
@@ -127,18 +127,22 @@ for node in nodes:
         print(f'source={source}, target={target}, type={edge_data["type"]}')
 
 
-# Print the number of edges and nodes
+#Print the number of edges and nodes
 print('\n')
 print('this graph contains', multi_digraph.number_of_edges(), 'edges')       
 print('this graph contains', multi_digraph.number_of_nodes(), 'nodes')
 
+# Save the low level access control to a csv file
 d2c.dict_to_csv(lla_dict)
+
+
 # Visualize the MultiDiGraph
-pos = nx.spring_layout(multi_digraph)
-plt.figure(figsize=(8, 6))
-nx.draw(multi_digraph, pos, with_labels=True, node_color='skyblue', edge_color='gray', node_size=700, arrowsize=20)
-edge_labels = nx.get_edge_attributes(multi_digraph, 'relationship')
-nx.draw_networkx_edge_labels(multi_digraph, pos, edge_labels=edge_labels)    
-plt.title("Random MultiDiGraph with Multiple Edges and Relationships")
-plt.show()
+
+# pos = nx.spring_layout(multi_digraph)
+# plt.figure(figsize=(8, 6))
+# nx.draw(multi_digraph, pos, with_labels=True, node_color='skyblue', edge_color='gray', node_size=700, arrowsize=20)
+# edge_labels = nx.get_edge_attributes(multi_digraph, 'relationship')
+# nx.draw_networkx_edge_labels(multi_digraph, pos, edge_labels=edge_labels)    
+# plt.title("Random MultiDiGraph with Multiple Edges and Relationships")
+# plt.show()
 
