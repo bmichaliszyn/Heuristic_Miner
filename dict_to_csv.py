@@ -58,5 +58,4 @@ def csv_to_dict(filename: str) -> dict:
    
     return lla_dict
 
-# print('td',test_dict)
-print('cc',csv_to_dict(filename='test.csv'))
+

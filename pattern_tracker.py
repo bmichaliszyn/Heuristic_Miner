@@ -6,63 +6,73 @@ import networkx as nx
 
 class Tracker:
     def __init__(self, relations: list, max_depth: int):
-        self.patterns = {}
         
-        self.relations = relations
+        # Thank you Chat GPT for helping me with this
+        # Why Your Code Breaks
+        # If Tracker expects a fresh list each time but internally modifies it, passing a pre-existing list (relationships) could cause unintended side effects.
+        # For example, if Tracker modifies self.relationships by appending or removing elements, then the original list (relationships) in your script gets modified as well—leading to unexpected behavior.
+
+     
+        self.patterns = {}
+        r_types = relations.copy()
+        relations = relations
         self.max_depth = max_depth
         depth = 1
         while depth < self.max_depth :
-            for rp in self.relations:
+            new_patterns = []
+            for rp in relations:
                 if len(rp) == depth:
-                    self.relations.append(rp + 'a')
-                    self.relations.append(rp + 'b') 
-                    self.relations.append(rp + 'c')
+                    for r in r_types:
+                        new_patterns.append(rp + r)
+            relations.extend(new_patterns)
             depth += 1
-        
-        for rp in self.relations:
-            self.patterns[rp] = False
+            
+     
+       
+        self.patterns = {rp: False for rp in relations}
+
         
 
     def show_size(self):
-        print(len(self.relations))
+        return('number of keys', len(self.patterns.keys()))
+
     
     def show_missing(self):
+        missing_patterns = []
         present = 0
         missing = 0
         for pattern in self.patterns.keys():
             if self.patterns[pattern] == False:
                  missing += 1
+                 missing_patterns.append(pattern)
             else:
                 present += 1
-        print('Present:', present)
-        print('Missing:', missing)
+      
+        return missing_patterns
     
+    
+    
+    #probably have to add non repeating nodes in a path
     def detect_pattern(self, graph: nx.MultiGraph):
         nodes = graph.nodes()
         
-        
-                
         def pattern_search(node: int, pattern: str, depth: int):
             if depth == self.max_depth:
                 return
             next_nodes = graph.neighbors(node)
-        
+
             for next_node in next_nodes:
-                print(next_node)
+             
                 next_node_data = graph.get_edge_data(node, next_node)
-    
-                print('nnd 1', next_node_data)
-                # print ('nnd 2', next_node_data[0]['type'])
-    
-                # for type in next_node_data:
+
+                for i in next_node_data:
+                    type_string = (next_node_data[i]['type'])
                     
-                 
-                #     next_node_data = next_node_data[type]
-                #     pattern = pattern + type
-                #     self.patterns[pattern] = True
-                # pattern_search(next_node, pattern, depth + 1)
-        
-        # For each node in the graph, we will perform a search for patterns
+                    for c in type_string:
+                
+                        new_pattern = pattern + c
+                        self.patterns[new_pattern] = True
+                        pattern_search(next_node, new_pattern, depth + 1)
         for node in nodes:
             pattern_search(node, '', 0)
     
