@@ -30,7 +30,7 @@ def find_policy(graph: nx.Graph, n: int, lla: dict, r_types: list):
     buckets = {rp: [] for rp in r_types}
    
     nodes = graph.nodes()
-    def scout_node(graph: nx.Graph, node: int, lla: dict, depth: int, cur_pattern: str, node_path: list):
+    def scout_node(graph: nx.Graph, node: int, depth: int, cur_pattern: str, node_path: list):
         
         if node_path is None:
             node_path = [node]
@@ -57,10 +57,8 @@ def find_policy(graph: nx.Graph, n: int, lla: dict, r_types: list):
                         
                         # Add every path to the pattern bucket
 
-                        print(f"Appending to buckets[{new_pattern}]: {new_path}")
-                        print(new_path[0], new_path[-1])
                         buckets[new_pattern].append(new_path)
-                        scout_node(graph, next_node, lla, depth - 1, new_pattern, new_path)
+                        scout_node(graph, next_node, depth - 1, new_pattern, new_path)
                     else:
                         continue
 
@@ -120,51 +118,36 @@ def find_policy(graph: nx.Graph, n: int, lla: dict, r_types: list):
             del buckets[b]
  
         bucket_list = sorted(buckets.items(), key = lambda item: len(item[1]))
-        print('bucket_list', bucket_list)
+       
+        for b in range(len(bucket_list)):
+            if bucket_list[b][0] == 'abc':
+                print(bucket_list[b])
+        # for b in bucket_list:
+        #     print(bucket_list[b][0], bucket_list[b][1])
         
         for i in range(len(bucket_list)):
             cur = bucket_list[i]
             
-            grant = 0
-            deny = 0
-            # Iterate through the paths
+            # Iterate through the paths cur[0] is the pattern 'ac', and cur[1] are the paths [1,2,3], [2,1,4]
             for np in cur[1]:
+                
                 start = np[0]
                 end = np[-1]
                 
-                # Based on the LLA, we will add to g or d
-                res = (lla[start][end])
-                if res == True:
-                    grant += 1
-                else:
-                    deny += 1
-                # Exit the current iteration (np) if deny and grant are indicated by the given paths and LLA
-                if deny != 0 and grant != 0:
-                    break         
-                
-            if grant > 0 and deny > 0:
-                policy[cur[0]] = False
-            elif grant > 0:
-                policy[cur[0]] = True
-            else:
-                policy[cur[0]] = False
+                if lla[start][end] == False:
+                    if cur[0] == 'abc':
+                        print('this is wrong in the lla:', start, end)
+                    policy[cur[0]] == False
                
      
     for node in nodes:
-        scout_node(graph, node, lla, n , '', [node])
+        scout_node(graph, node, n , '', [node])
     
-    # tbd = []
-    # for b in buckets:
-    #     if len(buckets[b]) == 0:
-    #         tbd.append(b)
-
-    # for b in tbd:
-    #     del buckets[b]
-        
-    # for b in buckets:
-    #     print(b, buckets[b])
             
     brute_force_check()
     rules = policy.keys()
     significant_rules = [x for x in rules if policy[x] == True]
+    for rule in significant_rules:
+        print(rule, buckets[rule])
     return ('The significant rules are:', significant_rules)
+    

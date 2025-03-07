@@ -1,5 +1,5 @@
 import pulp
-import networkx_ant_colony as ac
+import ant_colony.networkx_ant_colony as ac
 
 def minimum_weight_dominating_set(graph, weights):
     """

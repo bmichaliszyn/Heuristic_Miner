@@ -4,11 +4,12 @@ import random
 import dict_to_csv as d2c
 import pattern_tracker as pt
 import networkx_to_csv as n2c
+from typing import List
 
-
+def generate_graph(nodes, edges, rules,):
 # Parameters for the random graph
 num_nodes = 6
-num_edges = 10
+num_edges = 20
 
 # num_edges can equal up to N where N is the number of nodes in the graph 
 # (N(N-1))/2 * R where R is the number of relationships
@@ -17,7 +18,7 @@ num_edges = 10
 relationships = ['a', 'b', 'c']
 
 # Creating a tracker object for metadata
-tracker = pt.Tracker(relations= relationships.copy(), max_depth=3) # YOU MUST MANUALLY INPUT A THE RELATIONSHIPS, YOU CANNOT USE A LIST OF RELATIONSHIPS!!!! PYTHON IS VERY BROKEN
+#tracker = pt.Tracker(relations= relationships.copy(), max_depth=3) # YOU MUST MANUALLY INPUT A THE RELATIONSHIPS, YOU CANNOT USE A LIST OF RELATIONSHIPS!!!! PYTHON IS VERY BROKEN
 
 #Rules for the access control
 rules = [
@@ -58,8 +59,9 @@ for node in nodes:
     for i in range(len(nodes)):
         lla_dict[node][i] = False
 
-
-def grant_access(node: int, rule: list, depth: int, original_node: int):
+# Need to add non repeating here. Path cannot contain the same nodes
+def grant_access(node: int, rule: list, depth: int, original_node: int, path: List[int]):
+        
         # If we reach the end of the rule, we can grant access #Make sure node != original_node
         if len(rule) == depth:
             lla_dict[original_node][node] = True
@@ -73,7 +75,9 @@ def grant_access(node: int, rule: list, depth: int, original_node: int):
             next_nodes.add(edge[1])
         
         for next_node in next_nodes:    
-    
+            # Added the following to ensure we do not have cycles
+            if next_node in path:
+                continue
             # Remember, this grabs the edge data for the every edge, essentially we will retrieve all types of relationships
             edge_data = multi_digraph.get_edge_data(node, next_node)
             
@@ -85,7 +89,8 @@ def grant_access(node: int, rule: list, depth: int, original_node: int):
             
             # If the edge type matches the rule, we can continue
             if rule[depth] in types:
-                grant_access(next_node, rule, depth + 1, original_node)
+                new_path = path + [next_node]
+                grant_access(next_node, rule, depth + 1, original_node, new_path)
                 
             # If the edge type does not match the rule, we can't grant access
             else:
@@ -95,29 +100,11 @@ def grant_access(node: int, rule: list, depth: int, original_node: int):
 
 for node in nodes:
     for rule in rules:
-        grant_access(node, rule, 0, node)
+        grant_access(node, rule, 0, node, [])
 
 node_keys = list(lla_dict.keys())
 
-# # print the access control for each node
-# for node in node_keys:
-#     print('\n')
-#     print(node, 'has access to', lla_dict[node])
 
-# print('\n')
-# for node in nodes:
-    
-#     # We are grabbing the out edges of the node
-#     edges = multi_digraph.edges(node)
-#     print('\n')
-#     print(node, 'has', len((list(edges))), 'edges')
-    
-    
-#     for source, target, key in multi_digraph.edges(node, keys=True):
-#         edge_data = multi_digraph.get_edge_data(source, target, key)  # Get data for specific edge
-        
-#         # Print details correctly
-#         print(f'source={source}, target={target}, type={edge_data["type"]}')
 
 
 #Print the number of edges and nodes
@@ -170,16 +157,27 @@ for m in missing:
         start += 1
 
 # Need to change LLA with new nodes:
-nodes = multi_digraph.nodes()
-if new_nodes:
-    for node in new_nodes:
-        lla_dict[node] = {}
-        for i in range(len(nodes)):
-            lla_dict[node][i] = False
+# nodes = multi_digraph.nodes()
+# if new_nodes:
+#     for node in new_nodes:
+#         lla_dict[node] = {}
+#         for i in range(len(nodes)):
+#             lla_dict[node][i] = False
 
-    for node in new_nodes:
-        for rule in rules:
-            grant_access(node, rule, 0, node)
+#     for node in new_nodes:
+#         for rule in rules:
+#             grant_access(node, rule, 0, node, [])
+
+
+nodes = multi_digraph.nodes()
+for node in nodes:
+    lla_dict[node] = {}
+    for i in range(len(nodes)):
+        lla_dict[node][i] = False
+
+for node in nodes:
+    for rule in rules:
+        grant_access(node, rule, 0, node, [])
 
 
 # Save the low level access control to a csv file
@@ -194,7 +192,26 @@ print(multi_digraph)
 
 # We now have a graph that contains all possible patterns given a length N
 
-import rule_finder as rf
+# import rule_finder as rf
 
-print(rf.find_policy(multi_digraph, 3, lla_dict, relationships))
+# print(rf.find_policy(multi_digraph, 3, lla_dict, relationships))
 
+# print the access control for each node
+# for node in node_keys:
+#     print('\n')
+#     print(node, 'has access to', lla_dict[node])
+
+print('\n')
+for node in nodes:
+    
+    # We are grabbing the out edges of the node
+    edges = multi_digraph.edges(node)
+    print('\n')
+    print(node, 'has', len((list(edges))), 'edges')
+    
+    
+    for source, target, key in multi_digraph.edges(node, keys=True):
+        edge_data = multi_digraph.get_edge_data(source, target, key)  # Get data for specific edge
+        
+        # Print details correctly
+        print(f'source={source}, target={target}, type={edge_data["type"]}')

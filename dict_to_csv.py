@@ -12,7 +12,7 @@ test_dict[1][0] = True
 test_dict[1][1] = True
 test_dict[1][2] = True
 
-def dict_to_csv(data: dict, filename="test.csv"):
+def dict_to_csv(data: dict, filename="lla.csv"):
     with open(filename, mode='w', newline='') as file:
         writer = csv.writer(file)
         nodes = data.keys()

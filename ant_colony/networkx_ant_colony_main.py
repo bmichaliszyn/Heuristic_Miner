@@ -1,7 +1,7 @@
-import networkx_ant_colony as ac
+import ant_colony.networkx_ant_colony as ac
 import copy 
 import matplotlib.pyplot as plt
-import blank_space as bls
+import ant_colony.blank_space as bls
 
 
 #ToDo:
