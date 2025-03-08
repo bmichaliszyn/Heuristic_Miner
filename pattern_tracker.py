@@ -3,6 +3,7 @@
 # cares if the pattern is present
 
 import networkx as nx
+from typing import List
 
 class Tracker:
     def __init__(self, relations: list, max_depth: int):
@@ -12,8 +13,9 @@ class Tracker:
         # If Tracker expects a fresh list each time but internally modifies it, passing a pre-existing list (relationships) could cause unintended side effects.
         # For example, if Tracker modifies self.relationships by appending or removing elements, then the original list (relationships) in your script gets modified as well—leading to unexpected behavior.
 
-     
+        # Used to track the patterns present in a graph
         self.patterns = {}
+        
         r_types = relations.copy()
         relations = relations
         self.max_depth = max_depth
@@ -47,32 +49,32 @@ class Tracker:
                  missing_patterns.append(pattern)
             else:
                 present += 1
-      
+        print('missing:', missing)
         return missing_patterns
     
     
     
-    #probably have to add non repeating nodes in a path
+
     def detect_pattern(self, graph: nx.MultiGraph):
         nodes = graph.nodes()
         
-        def pattern_search(node: int, pattern: str, depth: int):
+        def pattern_search(node: int, pattern: str, depth: int, path: List[int]):
             if depth == self.max_depth:
                 return
-            next_nodes = graph.neighbors(node)
 
-            for next_node in next_nodes:
-             
-                next_node_data = graph.get_edge_data(node, next_node)
-
-                for i in next_node_data:
-                    type_string = (next_node_data[i]['type'])
-                    
-                    for c in type_string:
+            for next_node in graph.neighbors(node):
+                if next_node in path:
+                    continue
                 
-                        new_pattern = pattern + c
-                        self.patterns[new_pattern] = True
-                        pattern_search(next_node, new_pattern, depth + 1)
+                next_node_data = graph.get_edge_data(node, next_node)
+                if next_node_data:
+                    for edge_attrs in next_node_data.values():
+                        type_string = edge_attrs.get('type', '')
+                        
+                        for c in type_string:
+                            new_pattern = pattern + c
+                            self.patterns[new_pattern] = True
+                            pattern_search(next_node, new_pattern, depth + 1, path + [next_node])
         for node in nodes:
-            pattern_search(node, '', 0)
+            pattern_search(node, '', 0, [node])
     

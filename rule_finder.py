@@ -135,7 +135,9 @@ def find_policy(graph: nx.Graph, n: int, lla: dict, r_types: list):
                 end = np[-1]
                 
                 if lla[start][end] == False:
+                    
                     if cur[0] == 'abc':
+                        print('start', start, 'end', end)
                         print('this is wrong in the lla:', start, end)
                     policy[cur[0]] == False
                
