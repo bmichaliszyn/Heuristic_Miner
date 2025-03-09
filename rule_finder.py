@@ -1,16 +1,18 @@
+# The weakness of this algorithm is you may run across false positives.
+# For example, if "a,a,a" is a rule, but "a,a,b" shares a path with a node 
+# pair that contains "a,a,a" the algo may not determine that "a,a,b" is false
+# another node pair must have "a,a,b" and deny access to determine that "a,a,a"
+# is granting access and NOT "a,a,b"
+
 import networkx as nx
+from typing import List
+import time
 
-# def remove_contents(contents: list, b_list: list) :#-> list:
-#     for bucket in b_list:
-#         items_to_remove = [item for item in bucket[1] if tuple([item[0], item[-1]]) in contents]
-#         for item in items_to_remove:
-#             bucket[1].remove(item)
-#     return b_list
-
-
-
-def find_policy(graph: nx.Graph, n: int, lla: dict, r_types: list):
+def find_policy(graph: nx.Graph, n: int, lla: dict, r_types: List[str]):
+    start = time.time()
     
+    # This allows us to create buckets for each relationship pattern (contians node pairs)
+    # along with a policy that contains all relationship patterns (all set true)
     policy = {}
         
     depth = 1
@@ -26,16 +28,12 @@ def find_policy(graph: nx.Graph, n: int, lla: dict, r_types: list):
         depth += 1
     
     
-    policy = {rp: None for rp in r_types}
+    policy = {rp: True for rp in r_types}
     buckets = {rp: [] for rp in r_types}
    
     nodes = graph.nodes()
     def scout_node(graph: nx.Graph, node: int, depth: int, cur_pattern: str, node_path: list):
-        
-        if node_path is None:
-            node_path = [node]
-    
-        # Base case
+
         if depth == 0:
             return
         
@@ -47,20 +45,62 @@ def find_policy(graph: nx.Graph, n: int, lla: dict, r_types: list):
             next_node_data = graph.get_edge_data(node, next_node)
             
             # For each edge, we will grab the type
-            for i in next_node_data:
+            for edge_attrs in next_node_data.values():
                 # Grab the type of each edge
-                type_string = next_node_data[i]['type']
+                type_string = edge_attrs.get('type', '')
                 for c in type_string:
-                    if next_node not in node_path:
-                        new_path = node_path + [next_node]
-                        new_pattern = cur_pattern + c
+                    if next_node not in node_path:  
                         
                         # Add every path to the pattern bucket
-
-                        buckets[new_pattern].append(new_path)
-                        scout_node(graph, next_node, depth - 1, new_pattern, new_path)
+                        buckets[cur_pattern + c].append(node_path + [next_node])
+                        scout_node(graph, next_node, depth - 1, cur_pattern + c, node_path + [next_node])
                     else:
                         continue
+
+    def brute_force_check():
+        # Any bucket containing 0 instances of a pattern is False
+        to_be_removed = []
+        for b in buckets:
+            if len(buckets[b]) == 0:
+                policy[b] = False
+                to_be_removed.append(b)
+        for b in to_be_removed:
+            del buckets[b]
+ 
+        bucket_list = sorted(buckets.items(), key = lambda item: len(item[1]))
+       
+        for i in range(len(bucket_list)):
+            cur = bucket_list[i]
+            
+            # Iterate through the paths cur[0] is the pattern 'ac', and cur[1] are the paths [1,2,3], [2,1,4]
+            for np in cur[1]:
+    
+                start = np[0]
+                end = np[-1]
+                
+                if lla[start][end] == False:                    
+                    policy[cur[0]] = False
+            
+    # Find the node paths with max length n 
+    for node in nodes:
+        scout_node(graph, node, n , '', [node])
+    
+    brute_force_check()
+    end = time.time()
+    elapsed_time = end - start
+    print(f"Elapsed time: {elapsed_time:.2f} seconds")
+    rules = policy.keys()
+    significant_rules = [x for x in rules if policy[x] == True]
+    
+    # prints out each bucket and the node paths if the rule remains true
+    # for rule in significant_rules:
+    #     print(rule, buckets[rule])
+        
+    # Return the correct result with proper spelling and grammar     
+    if len(significant_rules) == 1:
+        return f"The significant rule is:\n{significant_rules}\nThere is {len(significant_rules)} significant rules"
+    else:
+        return f"The significant rules are:\n{significant_rules}\nThere are {len(significant_rules)} significant rules"
 
     
     # def policy_check():
@@ -103,53 +143,4 @@ def find_policy(graph: nx.Graph, n: int, lla: dict, r_types: list):
     #             policy[cur[0]] = False
     #             bucket_list = remove_contents(contents, bucket_list)
     #         bucket_list = bucket_list[:1]
-    
-    def brute_force_check():
-     
-        # Any bucket containing 0 instances of a pattern is False
-        to_be_removed = []
-        for b in buckets:
-            if b == 'abc':
-                print(f"this is {b}, length is {len(buckets[b])}")
-            if len(buckets[b]) == 0:
-                policy[b] = False
-                to_be_removed.append(b)
-        for b in to_be_removed:
-            del buckets[b]
- 
-        bucket_list = sorted(buckets.items(), key = lambda item: len(item[1]))
-       
-        for b in range(len(bucket_list)):
-            if bucket_list[b][0] == 'abc':
-                print(bucket_list[b])
-        # for b in bucket_list:
-        #     print(bucket_list[b][0], bucket_list[b][1])
-        
-        for i in range(len(bucket_list)):
-            cur = bucket_list[i]
-            
-            # Iterate through the paths cur[0] is the pattern 'ac', and cur[1] are the paths [1,2,3], [2,1,4]
-            for np in cur[1]:
-                
-                start = np[0]
-                end = np[-1]
-                
-                if lla[start][end] == False:
-                    
-                    if cur[0] == 'abc':
-                        print('start', start, 'end', end)
-                        print('this is wrong in the lla:', start, end)
-                    policy[cur[0]] == False
-               
-     
-    for node in nodes:
-        scout_node(graph, node, n , '', [node])
-    
-            
-    brute_force_check()
-    rules = policy.keys()
-    significant_rules = [x for x in rules if policy[x] == True]
-    for rule in significant_rules:
-        print(rule, buckets[rule])
-    return ('The significant rules are:', significant_rules)
     

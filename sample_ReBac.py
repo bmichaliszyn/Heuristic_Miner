@@ -1,9 +1,5 @@
 import networkx as nx
-import matplotlib.pyplot as plt
 import random
-import dict_to_csv as d2c
-import pattern_tracker as pt
-import networkx_to_csv as n2c
 from typing import List
 
 def generate_graph(num_nodes: int, num_edges:int, relationships: list[str]):
@@ -123,8 +119,8 @@ def update_graph(graph: nx.Graph, missing: List[list], rules):
         
         # I can comment this out if I want to add all missing patterns
         
-        if list(m) not in rules:
-            continue
+        # if list(m) not in rules:
+        #     continue
         
         #print('adding nodes to represent rule:', list(m))
         # The next node id is the length of the nodes in the graph
@@ -136,7 +132,7 @@ def update_graph(graph: nx.Graph, missing: List[list], rules):
         
         # Adding new nodes to graph to create the missing pattern
         for _ in range(len(edges) + 1):
-            new_node = graph.add_node(node_id)
+            graph.add_node(node_id)
             new_nodes.append(node_id)
             node_id += 1
         
