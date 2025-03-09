@@ -42,4 +42,4 @@ n2c.save_graph(graph)
 # Implement algorithims to find policy under this line
 
 hm.hueristic_miner(lla, max_rule_length, relationships.copy(), graph, iterations)
-print(rf.find_policy(graph, max_rule_length, lla, relationships.copy()))
+# print(rf.find_policy(graph, max_rule_length, lla, relationships.copy()))

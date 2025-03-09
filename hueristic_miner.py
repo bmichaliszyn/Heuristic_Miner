@@ -47,27 +47,32 @@ def complete_policy(policy:dict):
 
 def examine(node: int, graph: nx.Graph, neighbors: set, lla: dict, policy: dict, n: int, cd: set, cg :set):
     grant_dict = {}
- 
     targets = [neighbor for neighbor in neighbors if lla[node][neighbor] is True]
-  
     grants, denies = find_viable_paths(graph, node, targets, n) 
+    check_existing_grants = False
+    add_to_npg = []
     
     # If we find a new deny we must update our policy, checking a set will be faster (not sure)
+    # In addition, anytime we find something out about the policy, we must look at the unsolved node pairs
   
     for d in denies:
         if d not in cd:
+            print(f'Adding deny:{d} to policy')
             cd.add(d)
             policy[d] = False
+            check_existing_grants = True
             
+    # Each potential grant path is filtered out by confirmed denies. 
+    # The remaining ones are added to a dictionary with key as a tuple (source, target), value is list of paths
     for g in grants:
         target_node, path = g[0], g[1]
         if path in cd:
             continue      
         grant_dict.setdefault((node, target_node), []).append(path)
     
-    check_existing_grants = False
-    add_to_npg = []
     
+    
+    # If only 1 path exists, we know that it is granting access.
     for key, paths in grant_dict.items():
       
         if len(paths) == 1 and paths[0] not in cg:
@@ -75,7 +80,7 @@ def examine(node: int, graph: nx.Graph, neighbors: set, lla: dict, policy: dict,
             policy[paths[0]] = True
             check_existing_grants = True
         else:
-            add_to_npg.extend(((node, key), path) for path in paths)
+            add_to_npg.extend((key, path) for path in paths)
             
     return check_existing_grants, add_to_npg
    
@@ -110,11 +115,12 @@ def find_viable_paths(graph: nx.Graph, node: int, targets:List[int], max_length:
     return g_paths, d_paths
 
 def grant_check(policy: dict, cg: set, npg: dict, cd: set):
-    ('performing')
+    print('performing')
     # Create a list of keys to delete after iteration
     to_delete = []
 
     for np in list(npg.keys()):  # Iterate over a copy to modify safely
+        print('np',np)
         # Remove grants that are in 'cd'
         npg[np] = [grant for grant in npg[np] if grant not in cd]
 
@@ -122,12 +128,11 @@ def grant_check(policy: dict, cg: set, npg: dict, cd: set):
             grant = npg[np][0]  # Extract the single grant
             cg.add(grant)  # Add to confirmed grants
             policy[grant] = True  # Mark as approved
-
-        if not npg[np]:  # If no grants remain, mark for deletion
             to_delete.append(np)
 
     # Remove node pairs with no grants left
     for np in to_delete:
+        print(f'Node pair {np} was completed')
         del npg[np]
 
 def hueristic_miner(lla: dict, depth: int, r_types: List[str], graph: nx.Graph, max_iterations: int):
@@ -154,7 +159,8 @@ def hueristic_miner(lla: dict, depth: int, r_types: List[str], graph: nx.Graph, 
             if complete_policy(policy):
                 break    
             check_existing_grants, add_to_npg = examine(node, graph, neighbors, lla, policy, depth, confirmed_denies, confirmed_grants)
-            if check_existing_grants:
+            if check_existing_grants and len(node_pair_grants) > 0:
+                print('checking existing node pairs')
                 grant_check(policy, confirmed_grants, node_pair_grants, confirmed_denies)
             for npg in add_to_npg:
                 node_pair_grants.setdefault(npg[0], []).append(npg[1])
