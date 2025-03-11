@@ -44,7 +44,7 @@ def complete_policy(policy:dict):
 
 def examine(node: int, graph: nx.Graph, neighbors: set, lla: dict, policy: dict, n: int, cd: set, cg :set, proof: set, r_pairs: set):
     grant_dict = {}
-    targets = [neighbor for neighbor in neighbors if lla.get(neighbor) is True]
+    targets = [neighbor for neighbor in neighbors if lla.get(node, {}).get(neighbor) is True]
     grants, denies = find_viable_paths(graph, node, targets, n) 
     check_existing_grants = False
     add_to_npg = []
@@ -65,11 +65,14 @@ def examine(node: int, graph: nx.Graph, neighbors: set, lla: dict, policy: dict,
             
     # Each potential grant path is filtered out by confirmed denies. 
     # The remaining ones are added to a dictionary with key as a tuple (source, target), value is a tuple (path, visited)
-    for g in grants:
+    for g in grants:                                                                    
         target_node, path, visited = g[0], g[1], g[2]
         if path in cd:
             continue      
         grant_dict.setdefault((node, target_node), []).append((path, visited))
+        
+        # This line is actually so huge. Even if one iteration doesn't use an 
+        proof |= visited
     
     for key, paths in grant_dict.items():
         if len(paths) == 1:
@@ -106,7 +109,7 @@ def find_viable_paths(graph: nx.Graph, node: int, targets:List[int], max_length:
                         # If the original node is granted access we add to the g_path else, to the d_paths
                         if next_node in targets:
                             g_paths.append((next_node, new_path, new_visited))
-                        else:
+                        else :                                                     ############NEED LLA SEARCH HERE
                             d_paths.append((new_path, new_visited, next_node))
                         seek(next_node, depth + 1, new_path, new_visited)
                         
@@ -134,7 +137,7 @@ def grant_check(policy: dict, cg: set, npg: dict, cd: set, proof: set, r_pairs: 
             to_delete.append(np)
             
         
-            # If every grant path has been proven correct, the node is not worth iterating over 
+        # If every grant path has been proven correct, the node is not worth iterating over 
         elif all(grant_path[0] in cg for grant_path in npg[np]):
                 to_delete.append(np)
 
@@ -150,7 +153,6 @@ def count_bools_2d_dict(data: dict) -> int:
         for value in sub_dict.values()
     )
 
-
 def hueristic_miner(lla: dict, depth: int, r_types: List[str], graph: nx.Graph, max_iterations: int):
     #####
     start = time.time()
@@ -160,15 +162,14 @@ def hueristic_miner(lla: dict, depth: int, r_types: List[str], graph: nx.Graph, 
     node_pair_grants = {}
     nodes_checked = 0
     iterations = 0
-    checked_nodes= []
+    checked_nodes= set()
     proof = set()
-    reduced_lla = {}
     relevant_pairs = set()
 
     # Pre-process all nodes to find their connectivity. Sort them by lowest first and remove all nodes containing 0 connections.
     node_list = [(node, *find_connectivity(node, depth, graph)) for node in graph.nodes()]
     sorted_node_list = sorted(node_list, key=lambda x: x[1])
-    sorted_node_list = [n for n in sorted_node_list if n[1] > 0]  # Remove non-connected nodes
+    # sorted_node_list = [n for n in sorted_node_list if n[1] > 0]  # Remove non-connected nodes
 
     # Flag function will stop iterations if we complete the policy
     while not complete_policy(policy) and iterations < max_iterations:
@@ -187,7 +188,7 @@ def hueristic_miner(lla: dict, depth: int, r_types: List[str], graph: nx.Graph, 
                 node_pair_grants.setdefault(npg[0], []).append(npg[1])
             
             nodes_checked += 1
-            checked_nodes.append(node)
+            checked_nodes.add(node)
             
         iterations +=1
     end = time.time()
@@ -197,23 +198,23 @@ def hueristic_miner(lla: dict, depth: int, r_types: List[str], graph: nx.Graph, 
     ambiguous = sum(1 for p in policy if policy[p] is None)
     print(f'Iterations: {iterations}, Nodes checked: {nodes_checked}, Denies: {denies}, Grants: {grants}, Ambiguous: {ambiguous}')
     print(f"Elapsed time: {elapsed_time:.2f} seconds")
-    print(f"Nodes checked were: {checked_nodes}")
+    
+    list_of_grants = []
     for p in policy:
         if policy[p] == True:
-            print(p)
-    print(f'We involved {len(proof)}, nodes in securing the policy')
+            list_of_grants.append(p)
+    print(f'The grant policies were discovered to be {list_of_grants}')
+    print(f'We involved {len(proof)} nodes in securing the policy')
     print(f'There are {len(relevant_pairs)} relavent pairs')
+    rpp = list(proof)
+    reduced_lla = {}
     
-    source_nodes = set([x[0] for x in relevant_pairs])
+    # Creating a reduced lla for testing policies
+    for i in rpp:
+        reduced_lla[i] = {}
+        for j in rpp:
+            if i in lla and j in lla[i]:
+                reduced_lla[i][j] = lla[i][j]
+
     
-    for s in source_nodes:
-        reduced_lla[s] = {}
-            
-        
-    for i in relevant_pairs:
-        source, target = i[0], i[1]
-        reduced_lla[source].setdefault(target, lla[source][target])
-    print(f'The original lla contains {count_bools_2d_dict(lla)} access requests')
-    print(f'The reduced lla contains {count_bools_2d_dict(reduced_lla)} access requests')
- 
     return reduced_lla
