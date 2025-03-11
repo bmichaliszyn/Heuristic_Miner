@@ -140,7 +140,6 @@ def grant_check(policy: dict, cg: set, npg: dict, cd: set, proof: set, r_pairs: 
             policy[grant] = True  
             proof |= visited
             r_pairs.add((np[0], np[1]))
-            print((np[0], np[1])) ####
             to_delete.append(np)
             
         
