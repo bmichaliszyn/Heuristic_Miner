@@ -8,14 +8,14 @@ import hueristic_miner2 as hm2
 # Iterations is for hueristic_miner only
 iterations = 1000
 
-max_rule_length = 3
+max_rule_length = 5
 num_nodes = 800
-num_edges = 5000
-relationships = ['a', 'b', 'c']
+num_edges = 8000
+relationships = ['a', 'b', 'c', 'd', 'e']
 rules = [
-    ['a', 'b', 'c'],
-    ['a', 'a', 'a'],
-  
+    ['a', 'b', 'c', 'd', 'e'],
+    ['a', 'a', 'a']
+
 ]
 # Generating our graph
 graph = sr.generate_graph(num_nodes, num_edges, relationships)
@@ -39,10 +39,11 @@ d2c.dict_to_csv(lla)
 n2c.save_graph(graph)
 
 # Implement algorithims to find policy under this line
-
+print('\n', '1st run')
 new_lla = hm2.hueristic_miner(lla, max_rule_length, relationships.copy(), graph, iterations) 
-print('\n')
+print('\n', '2nd run')
 test = hm2.hueristic_miner(new_lla, max_rule_length, relationships.copy(), graph, iterations) 
+print('\n', '3rd run')
 test2 = hm2.hueristic_miner(test, max_rule_length, relationships.copy(), graph, iterations) 
 # hm.hueristic_miner(lla, max_rule_length, relationships.copy(), graph, iterations) 
 
