@@ -9,14 +9,13 @@ import hueristic_miner as hm
 iterations = 1000
 
 max_rule_length = 5
-num_nodes = 1000
-num_edges = 10000
+num_nodes = 100
+num_edges = 1000
 relationships = ['a', 'b', 'c', 'd','e']
 rules = [
     ['a', 'b', 'c'],
     ['a', 'a', 'a'],
     ['a', 'a', 'd', 'a', 'e']
-    
 ]
 # Generating our graph
 graph = sr.generate_graph(num_nodes, num_edges, relationships)
@@ -41,5 +40,6 @@ n2c.save_graph(graph)
 
 # Implement algorithims to find policy under this line
 
-hm.hueristic_miner(lla, max_rule_length, relationships.copy(), graph, iterations)
+hm.hueristic_miner(lla, max_rule_length, relationships.copy(), graph, iterations) 
+
 # print(rf.find_policy(graph, max_rule_length, lla, relationships.copy()))

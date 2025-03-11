@@ -57,7 +57,7 @@ def examine(node: int, graph: nx.Graph, neighbors: set, lla: dict, policy: dict,
   
     for d in denies:
         if d not in cd:
-            print(f'Adding deny:{d} to policy')
+            # print(f'Adding deny:{d} to policy')
             cd.add(d)
             policy[d] = False
             check_existing_grants = True
@@ -115,24 +115,27 @@ def find_viable_paths(graph: nx.Graph, node: int, targets:List[int], max_length:
     return g_paths, d_paths
 
 def grant_check(policy: dict, cg: set, npg: dict, cd: set):
-    print('performing')
+    print('performing grant check')
     # Create a list of keys to delete after iteration
     to_delete = []
 
     for np in list(npg.keys()):  # Iterate over a copy to modify safely
-        print('np',np)
+        
         # Remove grants that are in 'cd'
         npg[np] = [grant for grant in npg[np] if grant not in cd]
 
-        if len(npg[np]) == 1:  # If only one grant remains
-            grant = npg[np][0]  # Extract the single grant
-            cg.add(grant)  # Add to confirmed grants
-            policy[grant] = True  # Mark as approved
+        # If only one grant remains, we can add it to confirmed grants
+        if len(npg[np]) == 1:  
+            grant = npg[np][0]  
+            cg.add(grant)  
+            policy[grant] = True  
             to_delete.append(np)
-
+        
+        # If we already know the confirmed grants
+        if len(npg[np]) == 0:
+            to_delete.append(np)
     # Remove node pairs with no grants left
     for np in to_delete:
-        print(f'Node pair {np} was completed')
         del npg[np]
 
 def hueristic_miner(lla: dict, depth: int, r_types: List[str], graph: nx.Graph, max_iterations: int):
@@ -155,12 +158,10 @@ def hueristic_miner(lla: dict, depth: int, r_types: List[str], graph: nx.Graph, 
     while not complete_policy(policy) and iterations < max_iterations:
         
         for node, _, neighbors in sorted_node_list:    
-            print(node)
             if complete_policy(policy):
                 break    
             check_existing_grants, add_to_npg = examine(node, graph, neighbors, lla, policy, depth, confirmed_denies, confirmed_grants)
             if check_existing_grants and len(node_pair_grants) > 0:
-                print('checking existing node pairs')
                 grant_check(policy, confirmed_grants, node_pair_grants, confirmed_denies)
             for npg in add_to_npg:
                 node_pair_grants.setdefault(npg[0], []).append(npg[1])
@@ -176,7 +177,9 @@ def hueristic_miner(lla: dict, depth: int, r_types: List[str], graph: nx.Graph, 
     print(f'Iterations: {iterations}, Nodes checked: {nodes_checked}, Denies: {denies}, Grants: {grants}, Ambiguous: {ambiguous}')
     print(f"Elapsed time: {elapsed_time:.2f} seconds")
     print(f"Nodes checked were: {checked_nodes}")
-    for rule in policy.keys():
-        if policy[rule] == True:
-            print (rule)
+    for p in policy:
+        if policy[p] == True:
+            print(p)
+    
+ 
     return policy

@@ -56,7 +56,7 @@ def find_policy(graph: nx.Graph, n: int, lla: dict, r_types: List[str]):
                         scout_node(graph, next_node, depth - 1, cur_pattern + c, node_path + [next_node])
                     else:
                         continue
-
+ 
     def brute_force_check():
         # Any bucket containing 0 instances of a pattern is False
         to_be_removed = []
@@ -143,4 +143,5 @@ def find_policy(graph: nx.Graph, n: int, lla: dict, r_types: List[str]):
     #             policy[cur[0]] = False
     #             bucket_list = remove_contents(contents, bucket_list)
     #         bucket_list = bucket_list[:1]
+    
     
