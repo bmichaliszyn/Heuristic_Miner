@@ -4,13 +4,13 @@ import dict_to_csv as d2c
 import networkx_to_csv as n2c
 import rule_finder as rf
 import hueristic_miner as hm
-
+import hueristic_miner2 as hm2
 # Iterations is for hueristic_miner only
 iterations = 1000
 
 max_rule_length = 5
-num_nodes = 100
-num_edges = 1000
+num_nodes = 800
+num_edges = 5000
 relationships = ['a', 'b', 'c', 'd','e']
 rules = [
     ['a', 'b', 'c'],
@@ -40,6 +40,10 @@ n2c.save_graph(graph)
 
 # Implement algorithims to find policy under this line
 
-hm.hueristic_miner(lla, max_rule_length, relationships.copy(), graph, iterations) 
+new_lla = hm2.hueristic_miner(lla, max_rule_length, relationships.copy(), graph, iterations) 
+print('\n')
+hm2.hueristic_miner(new_lla, max_rule_length, relationships.copy(), graph, iterations) 
+
+# hm.hueristic_miner(lla, max_rule_length, relationships.copy(), graph, iterations) 
 
 # print(rf.find_policy(graph, max_rule_length, lla, relationships.copy()))

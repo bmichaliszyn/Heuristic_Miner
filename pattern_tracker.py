@@ -49,7 +49,6 @@ class Tracker:
                  missing_patterns.append(pattern)
             else:
                 present += 1
-        print('missing:', missing)
         return missing_patterns
     
     
