@@ -54,7 +54,7 @@ def examine(node: int, graph: nx.Graph, neighbors: set, lla: dict, policy: dict,
   
     for d in denies:
         pattern, visited, target_node = d[0], d[1], d[2]
-        if pattern not in cd and lla.get(node, {}).get(target_node) == False:
+        if pattern not in cd and lla.get(node, {}).get(target_node) == False: #### I SPENT 9 HOURS FIGURING OUT TO ADD THE AND STATEMENT
             # I'm assuming if we do not have a record of something granting access, it will default to a deny, have to avoid this!
             cd.add(pattern)
             policy[pattern] = False
@@ -180,7 +180,7 @@ def hueristic_miner(lla: dict, depth: int, r_types: List[str], graph: nx.Graph, 
     
     # Flag function will stop iterations if we complete the policy
     while not complete_policy(policy) and iterations < max_iterations:
-        for node, _, neighbors in sorted_node_list:    
+        for node, _, neighbors in sorted_node_list: #sorted_node_list:    
             if complete_policy(policy):
                 break    
             
@@ -205,14 +205,8 @@ def hueristic_miner(lla: dict, depth: int, r_types: List[str], graph: nx.Graph, 
     ambiguous = sum(1 for p in policy if policy[p] is None)
     
     # Metadata for print statements
-    nodes_in_pairs = set()
-    rpp = list(proof)
+
     reduced_lla = {}
-    # for i in list(relevant_pairs):
-    #     start, end = i[0], i[1]
-    #     nodes_in_pairs.add(start)
-    #     nodes_in_pairs.add(end)
-    # print(f'length of rp {len(nodes_in_pairs)} length of nodes in proof {len(rpp)}')
     
                 #Distance LLA
     #Let's try removing lla based on distance from nodes
@@ -255,7 +249,4 @@ def hueristic_miner(lla: dict, depth: int, r_types: List[str], graph: nx.Graph, 
     print(f'The original lla contains: {(count_access(lla))} access requests')
     print(f'The reduced lla  contains: {(count_access(reduced_lla))} access requests')
     
-    
-        
-    
-    return reduced_lla
+    return elapsed_time

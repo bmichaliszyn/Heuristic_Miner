@@ -54,10 +54,13 @@ class Tracker:
     
     
 
-    def detect_pattern(self, graph: nx.MultiGraph):
+    def detect_pattern(self, graph: nx.MultiGraph,):
         nodes = graph.nodes()
+        max_patterns = len(self.patterns)
+        seen = 0
         
         def pattern_search(node: int, pattern: str, depth: int, path: List[int]):
+            nonlocal seen
             if depth == self.max_depth:
                 return
 
@@ -72,8 +75,15 @@ class Tracker:
                         
                         for c in type_string:
                             new_pattern = pattern + c
-                            self.patterns[new_pattern] = True
+                            
+                            if self.patterns[new_pattern] == False:
+                                seen += 1
+                                self.patterns[new_pattern] = True
                             pattern_search(next_node, new_pattern, depth + 1, path + [next_node])
+      
         for node in nodes:
+            if seen == max_patterns:
+                break
             pattern_search(node, '', 0, [node])
+        
     

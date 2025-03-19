@@ -79,37 +79,6 @@ def grant_access(rules: list, lla_dict: dict, graph: nx.Graph):
         
     return new_lla
 
-        
-
-# We need to apply the rules to each node
-
-# for node in nodes:
-#     for rule in rules:
-#         grant_access(node, rule, 0, node, [])
-
-# node_keys = list(lla_dict.keys())
-
-
-
-
-#Print the number of edges and nodes
-
-# print('this graph contains', multi_digraph.number_of_edges(), 'edges')       
-# print('this graph contains', multi_digraph.number_of_nodes(), 'nodes')
-
-# Visualize the MultiDiGraph
-
-# pos = nx.spring_layout(multi_digraph)
-# plt.figure(figsize=(8, 6))
-# nx.draw(multi_digraph, pos, with_labels=True, node_color='skyblue', edge_color='gray', node_size=700, arrowsize=20)
-# edge_labels = nx.get_edge_attributes(multi_digraph, 'relationship')
-# nx.draw_networkx_edge_labels(multi_digraph, pos, edge_labels=edge_labels)    
-# plt.title("Random MultiDiGraph with Multiple Edges and Relationships")
-# plt.show()
-
-
-# tracker.detect_pattern(multi_digraph)
-# tracker.show_size()
 
 def update_graph(graph: nx.Graph, missing: List[list], rules):
 
@@ -141,53 +110,3 @@ def update_graph(graph: nx.Graph, missing: List[list], rules):
         for i in range(len(edges)):  
             graph.add_edge(start, start + 1, type=edges[i])
             start += 1
-
-
-
-
-# nodes = multi_digraph.nodes()
-# for node in nodes:
-#     lla_dict[node] = {}
-#     for i in range(len(nodes)):
-#         lla_dict[node][i] = False
-
-# for node in nodes:
-#     for rule in rules:
-#         grant_access(node, rule, 0, node, [])
-
-
-# # Save the low level access control to a csv file
-# d2c.dict_to_csv(lla_dict)
-
-# # Save the graph to a csv file
-
-# n2c.save_graph(multi_digraph, 'graph.csv')    
-
-# print(multi_digraph)
-
-
-# # We now have a graph that contains all possible patterns given a length N
-
-# # import rule_finder as rf
-
-# # print(rf.find_policy(multi_digraph, 3, lla_dict, relationships))
-
-# # print the access control for each node
-# # for node in node_keys:
-# #     print('\n')
-# #     print(node, 'has access to', lla_dict[node])
-
-# print('\n')
-# for node in nodes:
-    
-#     # We are grabbing the out edges of the node
-#     edges = multi_digraph.edges(node)
-#     print('\n')
-#     print(node, 'has', len((list(edges))), 'edges')
-    
-    
-#     for source, target, key in multi_digraph.edges(node, keys=True):
-#         edge_data = multi_digraph.get_edge_data(source, target, key)  # Get data for specific edge
-        
-#         # Print details correctly
-#         print(f'source={source}, target={target}, type={edge_data["type"]}')
