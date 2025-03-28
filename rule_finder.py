@@ -28,10 +28,12 @@ def find_policy(graph: nx.Graph, n: int, lla: dict, r_types: List[str]):
         depth += 1
     
     
-    policy = {rp: True for rp in r_types}
+    policy = {rp: None for rp in r_types}
     buckets = {rp: [] for rp in r_types}
-   
     nodes = graph.nodes()
+    
+    ### Check policy
+    # def check_policy(policy: dict, lla: dict, node_proof: dict):
     def scout_node(graph: nx.Graph, node: int, depth: int, cur_pattern: str, node_path: list):
 
         if depth == 0:
@@ -88,7 +90,7 @@ def find_policy(graph: nx.Graph, n: int, lla: dict, r_types: List[str]):
     brute_force_check()
     end = time.time()
     elapsed_time = end - start
-    print(f"Elapsed time: {elapsed_time:.2f} seconds")
+    # print(f"Elapsed time: {elapsed_time:.2f} seconds")
     rules = policy.keys()
     significant_rules = [x for x in rules if policy[x] == True]
     
@@ -97,10 +99,7 @@ def find_policy(graph: nx.Graph, n: int, lla: dict, r_types: List[str]):
     #     print(rule, buckets[rule])
         
     # Return the correct result with proper spelling and grammar     
-    if len(significant_rules) == 1:
-        return f"The significant rule is:\n{significant_rules}\nThere is {len(significant_rules)} significant rules"
-    else:
-        return f"The significant rules are:\n{significant_rules}\nThere are {len(significant_rules)} significant rules"
+    return(significant_rules, elapsed_time)
 
     
     # def policy_check():

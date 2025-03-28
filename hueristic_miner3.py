@@ -173,7 +173,7 @@ def hueristic_miner(lla: dict, depth: int, r_types: List[str], graph: nx.Graph, 
 
     # Pre-process all nodes to find their connectivity. Sort them by lowest first and remove all nodes containing 0 connections.
     node_list = [(node, *find_connectivity(node, depth, graph)) for node in graph.nodes()]
-    sorted_node_list = sorted(node_list, key=lambda x: x[1], reverse=False)
+    sorted_node_list = sorted(node_list, key=lambda x: x[1], reverse=True)
     sorted_node_list = [n for n in sorted_node_list if n[1] > 0]  # Remove non-connected nodes
     
     start = time.time()
@@ -225,10 +225,11 @@ def hueristic_miner(lla: dict, depth: int, r_types: List[str], graph: nx.Graph, 
     print(f"Elapsed time: {elapsed_time:.2f} seconds")
     # print(f'The grant policies were discovered to be {list_of_grants}')
     # print(f'There are {len(relevant_pairs)} relavent pairs')
-    # print(f'The original lla contains: {(count_access(lla))} access requests')
+    print(f'The original lla contains: {(count_access(lla))} access requests')
     print(f'The reduced lla  contains: {(count_access(reduced_lla))} access requests')
     
     
     return elapsed_time, count_access(reduced_lla)
 
-# This explores low to high 
+
+# This explores high to low

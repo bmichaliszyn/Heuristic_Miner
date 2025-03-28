@@ -88,8 +88,8 @@ def update_graph(graph: nx.Graph, missing: List[list], rules):
         
         # I can comment this out if I want to add all missing patterns
         
-        if list(m) not in rules:
-            continue
+        # if list(m) not in rules:
+        #     continue
         
         #print('adding nodes to represent rule:', list(m))
         # The next node id is the length of the nodes in the graph
