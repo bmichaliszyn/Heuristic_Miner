@@ -3,7 +3,7 @@ import pattern_tracker as pt
 import dict_to_csv as d2c
 import networkx_to_csv as n2c
 import rule_finder as rf
-import hueristic_miner as hm
+import miscellaneous_sorted.hueristic_miner as hm
 import hueristic_miner2 as hm2
 import lla_csv
 

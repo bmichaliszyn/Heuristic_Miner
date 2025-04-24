@@ -3,10 +3,10 @@ import pattern_tracker as pt
 import dict_to_csv as d2c
 import networkx_to_csv as n2c
 import rule_finder as rf
-import hueristic_miner as hm
+import miscellaneous_sorted.hueristic_miner as hm
 import hueristic_miner2 as hm2
-import hueristic_miner3 as hm3
-import heuristic_miner4 as hm4
+import miscellaneous_sorted.hueristic_miner3 as hm3
+import miscellaneous_sorted.heuristic_miner4 as hm4
 # import hueristic_miner5 as hm5
 import lla_csv
 import networkx as nx
